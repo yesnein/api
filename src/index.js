@@ -1,27 +1,21 @@
-import 'dotenv/config'
-import fs from 'fs'
-import http from 'http'
-import https from 'https'
-import express from 'express'
-import cors from 'cors'
-import passport from 'passport'
-import { BasicStrategy } from 'passport-http'
+require('dotenv/config')
+const http = require('http')
+const https = require('https')
+const express = require('express')
+const cors = require('cors')
+const passport = require('passport')
+const passportHttp = require('passport-http')
 
 const app = express()
 
 const isProd = (process.env.ENV === 'production')
-const key = isProd ? fs.readFileSync('/etc/letsencrypt/live/h2939755.stratoserver.net/privkey.pem', 'utf8') : ''
-const cert = isProd ? fs.readFileSync('/etc/letsencrypt/live/h2939755.stratoserver.net/cert.pem', 'utf8') : ''
-const ca = isProd ? fs.readFileSync('/etc/letsencrypt/live/h2939755.stratoserver.net/chain.pem', 'utf8') : ''
-
-const credentials = { key, cert, ca }
 
 const users = {
     user: 'password'
 }
 
-passport.use(new BasicStrategy((username, password, done) => {
-    if (!users[username] || users[username] != password) {
+passport.use(new passportHttp.BasicStrategy((username, password, done) => {
+    if (!users[username] || users[username] !== password) {
         return done (null, false)
     }
     return done(null, username)
@@ -63,15 +57,15 @@ app.post('/messages',
     return res.send(message)
 })
 
-const httpServer = http.createServer(app)
-
-httpServer.listen(process.env.HTTP_PORT, () => {
-    console.log(`Express HTTP serving running port ${process.env.HTTP_PORT}!`)
-})
-
 if (isProd) {
-    const httpsServer = https.createServer(credentials, app)
-    httpsServer.listen(process.env.HTTPS_PORT, () => {
+    const httpsServer = https.createServer(app)
+    httpsServer.listen(process.env.HTTPS_PORT || 443, () => {
         console.log(`Express HTTP serving running port ${process.env.HTTPS_PORT}!`)
+    })
+}
+else {
+    const httpServer = http.createServer(app)
+    httpServer.listen(process.env.HTTP_PORT || 80, () => {
+        console.log(`Express HTTP serving running port ${process.env.HTTP_PORT}!`)
     })
 }

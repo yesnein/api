@@ -57,14 +57,14 @@ app.post('/messages',
 })
 
 if (isProd) {
-    const httpsServer = https.createServer(app)
-    httpsServer.listen(process.env.HTTPS_PORT || 443, () => {
-        console.log(`Express HTTP serving running port ${process.env.HTTPS_PORT}!`)
+    var port = process.env.HTTPS_PORT || 443
+    app.listen(port, () => {
+        console.log(`Express HTTP serving running port ${port}!`)
     })
 }
 else {
-    const httpServer = http.createServer(app)
-    httpServer.listen(process.env.HTTP_PORT || 80, () => {
-        console.log(`Express HTTP serving running port ${process.env.HTTP_PORT}!`)
+    var port = process.env.HTTP_PORT || 80
+    app.listen(port, () => {
+        console.log(`Express HTTP serving running port ${port}!`)
     })
 }
